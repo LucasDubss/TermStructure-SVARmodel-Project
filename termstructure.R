@@ -2,7 +2,7 @@
 #                                                                     T E R M  -  S T R U C T U  R E     C O D E 
 #                                                                        Lucas Dubois & Myriam  Lamborelle
 #========================================================================================
-
+rm(list = ls())
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 #1.0  Libraries :
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ library(viridis)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 #2.0  Data Treatment :
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-rm(list = ls())
+
 path<- "/Users/lucasdubois/Desktop/LaTeX/MACRO&FI/Data/germanbonds.xlsx" 
 images<- "/Users/lucasdubois/Desktop/LaTeX/MACRO&FI/Images"
 raw <- read_excel(path)
@@ -80,7 +80,6 @@ ggplot(yields_long, aes(x = date, y = yield, color = maturity)) +
   geom_line(linewidth = 1) +
   scale_color_brewer(palette = "Spectral") +
   labs(
-    title = "German Government Bond Yields",
     x = NULL,
     y = "Yield (%)",
     color = "Maturity"
@@ -88,8 +87,7 @@ ggplot(yields_long, aes(x = date, y = yield, color = maturity)) +
   theme_minimal(base_size = 14) +
   theme(
     legend.position = "right",
-    legend.title = element_text(face = "bold"),
-    plot.title = element_text(face = "bold")
+    legend.title = element_text(face = "bold")
   )
 
 ggsave(
@@ -146,8 +144,7 @@ plot(
   col = 2,
   ylim = c(-0.6, 0.6),
   xlab = "Maturity (months)",
-  ylab = "",
-  main = "PCA Loadings (W)"
+  ylab = ""
 )
 
 lines(plot2$maturity_months, plot2$PC2, col = 3, lwd = 2)
@@ -162,4 +159,86 @@ legend(
 )
 
 dev.off()
-#Plotting PCs:
+
+#PCs Plot:
+PCs_to_plot <- data.frame(
+  date = yields$date,
+  PC1 = PCs$PC1,
+  PC2 = PCs$PC2,
+  PC3 = PCs$PC3
+)
+
+covid_start   <- as.Date("2020-03-01")
+covid_end     <- as.Date("2021-06-30")
+
+ukraine_start <- as.Date("2022-02-01")
+ukraine_end   <- as.Date("2023-12-31")
+
+pc_cols <- viridis::turbo(3)     
+
+y_lim <- range(PCs_to_plot[, 2:4])
+
+png(
+  filename = file.path(images, "PCs.png"),
+  width = 1000,
+  height = 600,
+  res = 130
+)
+
+plot(
+  PCs_to_plot$date,
+  PCs_to_plot$PC1,
+  type = "l",
+  lwd = 2.5,
+  col = pc_cols[1],
+  ylim = y_lim,
+  xlab = "",
+  ylab = "%"
+)
+
+# COVID-19 crisis
+rect(
+  xleft  = covid_start,
+  xright = covid_end,
+  ybottom = y_lim[1],
+  ytop    = y_lim[2],
+  col = rgb(0.6, 0.6, 0.6, 0.35),
+  border = NA
+)
+
+# Ukraine / energy crisis
+rect(
+  xleft  = ukraine_start,
+  xright = ukraine_end,
+  ybottom = y_lim[1],
+  ytop    = y_lim[2],
+  col = rgb(1, 0.5, 0.5, 0.35),
+  border = NA
+)
+
+lines(PCs_to_plot$date, PCs_to_plot$PC1, col = pc_cols[1], lwd = 2.5)
+lines(PCs_to_plot$date, PCs_to_plot$PC2, col = pc_cols[2], lwd = 2.5)
+lines(PCs_to_plot$date, PCs_to_plot$PC3, col = pc_cols[3], lwd = 2.5)
+
+legend(
+  "top",
+  legend = c(
+    "PC1",
+    "PC2",
+    "PC3",
+    "COVID-19 crisis",
+    "Ukraine / Energy crisis"
+  ),
+  col = c(
+    pc_cols,
+    rgb(0.6, 0.6, 0.6, 0.6),
+    rgb(1, 0.5, 0.5, 0.6)
+  ),
+  lwd = c(2.5, 2.5, 2.5, NA, NA),
+  pch = c(NA, NA, NA, 15, 15),
+  pt.cex = 2,
+  bty = "n",
+  cex = 0.9
+)
+
+dev.off()
