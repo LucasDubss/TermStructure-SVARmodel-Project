@@ -101,11 +101,9 @@
 \end{center}
 \vspace{0.5cm}
 \begin{abstract}
-    \hspace{1cm} As seen in the course, the New Keynesian (NK) model serves as a fundamental framework in macroeconomic theory and the formulation of monetary policy. 
-At its core lies the concept of \textit{divine coincidence}, which suggests that stabilizing inflation successfully stabilizes the output gap that influences welfare. 
-This finding significantly eases the challenges faced by central banks since it clearly implies that prioritizing inflation control is enough to reach market efficiency.
-However, in their 2007 paper, Blanchard and Galí question this assumption by integrating the notion of \textit{real wage rigidities } in the NK framework. 
-Their findings reveal that once we take these frictions into account, the divine coincidence disappears.
+This report contains the results and analysis of the two parts of this project, namely the (\ref{sec:termstructure}) term-structure model for bonds and the (\ref{sec:svarmodel}) SVAR analysis of monetary policy shocks in Germany. 
+All the figures and tables are presented in the Appendix section at the end of the report.
+Furthermore, the R codes can be found in this \href{https://github.com/LucasDubss/TermStructure-SVARmodel-Project}{\textbf{GitHub repository}}.
 \end{abstract}
 
 \vspace{3cm}
@@ -119,4 +117,59 @@ Their findings reveal that once we take these frictions into account, the divine
 
 %-------------- Main Content --------------
 \section{\Large Term-Structure Models:}
+\label{sec:termstructure}
+
+\pagebreak
+
+\section{\Large SVAR Analysis of Monetary Policy:}
+\label{sec:svarmodel}
+
+\pagebreak
+
+\appendix
+
+\section{\Large Term-Structure Appendix}
+
+\begin{figure}[H]
+    \centering
+    \caption{German Yield Curves}
+    \includegraphics[width=0.8\textwidth]{german_yield_curve.png}
+    \label{fig:yields}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \caption{Principal Component Analysis Summary}
+    \label{tab:pca_summary}
+    \begin{tabular}{lcccccc}
+    \hline
+     & Comp.1 & Comp.2 & Comp.3 & Comp.4 & Comp.5 & Comp.6 \\
+    \hline
+    Standard deviation 
+    & 3.8506 & 1.3165 & 0.4018 & 0.1423 & 0.0872 & 0.0673 \\
+    Proportion of Variance 
+    & 0.8846 & 0.1034 & 0.0096 & 0.0012 & 0.0005 & 0.0003 \\
+    Cumulative Proportion 
+    & 0.8846 & 0.9880 & 0.9976 & 0.9988 & 0.9993 & 0.9995 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \caption{PCA Loadings}
+    \includegraphics[width=0.8\textwidth]{PCA.png}
+    \label{fig:pcal}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \caption{Principal Components Time Series}
+    \includegraphics[width=0.8\textwidth]{PCs.png}
+    \label{fig:pcs}
+\end{figure}
+
+\pagebreak
+\section{\Large SVAR Appendix}
+\pagebreak
 \end{document}
