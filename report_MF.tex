@@ -42,7 +42,7 @@
 \definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}
 
 %==================== B i b l i o g r a p h y ====================
-\addbibresource{master.bib}
+\addbibresource{report_MF.bib}
 
 %==================== S e t t i n g s ====================
 \geometry{left=1in, right=1in, top=1in, bottom=1in}
@@ -91,7 +91,7 @@
 \vspace{0,5cm}
 \vspace{0.75cm}
 \begin{spacing}{1.75}
-{\LARGE \textbf{\textsc{Report:} \textit{A term-structure model for bonds and a SVAR analysis of monetary policy shocks in Germany}}}
+{\LARGE \textbf{\textsc{Report:} \textit{A Term-Structure Model for Bonds and a SVAR Analysis of Monetary Policy Shocks in Germany}}}
 \vspace{0.75cm}
 \end{spacing}
 \rule{\linewidth}{1pt}
@@ -118,7 +118,26 @@ Furthermore, the R codes can be found in this \href{https://github.com/LucasDubs
 %-------------- Main Content --------------
 \section{\Large Term-Structure Models:}
 \label{sec:termstructure}
+\subsection{Data Description:}
+For this part, we decided to use the available data from the Refinitiv Datastream database (now LSEG) on German government bond yields. 
+The dataset contains monthly yields of par bonds with maturities ranging from 1 month to 30 years, spanning from December 2010 to November 2025, as show in table %ADD HERE. 
+Additionally, Figure \ref{fig:yields} in the appendix illustrates the yield curves at different points in time, highlighting the variations in yields across maturities.
 
+\subsection{Principal Component Analysis:}
+To analyse the structure of the yield curves, we performed a Principal Component Analysis (PCA) on the yield data.
+The PCA results, summarized in Table \ref{tab:pca_summary}, indicate that the first three principal components explain over 99,75\% of the variance in the yield data.
+We decided to retain therefore the first three components for further analysis, since they capture the vast majority of the information in the yield curves and the next components only contribute marginally to the explained variance.
+
+\par
+The loadings, ploted through maturities (monthly) in Figure \ref{fig:pcal}, reveal the typical (almost textbook) interpretations of the first three principal components in yield curve analysis, as in \cite{nelson_parsimonious_1987}:
+
+\begin{enumerate}
+    \item \textbf{Level Factor (PC1):} The first principal component has positive loadings across all maturities, indicating that it represents a parallel shift in the yield curve. An increase in this component corresponds to an overall increase in yields across all maturities. For Germany in the selected period, it stayed at around .3 throughout maturities, without major fluctuations. This is also very similar to the results obtained with the OIS contracts. 
+    \item \textbf{Slope Factor (PC2):} The second principal component behaves pretty consistently with \cite{nelson_parsimonious_1987}, with the "fastest decay". This negative slope is not aligned with the OIS results.
+    \item \textbf{Curvature Factor (PC3):} The third principal component exhibits a reverse hump-shaped pattern, likewise to the OIS. This could be due to low rates environment and the presence of negative yields in the short end of the curve. Nonetheless, this factor only explains about 1\% of the variance, so its economic significance might be limited.
+\end{enumerate}
+
+\subsection{Time Series of Principal Components:}
 \pagebreak
 
 \section{\Large SVAR Analysis of Monetary Policy:}
@@ -126,6 +145,11 @@ Furthermore, the R codes can be found in this \href{https://github.com/LucasDubs
 
 \pagebreak
 
+\section{\Large References}
+
+\printbibliography[heading=none]
+
+\pagebreak
 \appendix
 
 \section{\Large Term-Structure Appendix}
@@ -165,8 +189,30 @@ Furthermore, the R codes can be found in this \href{https://github.com/LucasDubs
 \begin{figure}[H]
     \centering
     \caption{Principal Components Time Series}
-    \includegraphics[width=0.8\textwidth]{PCs.png}
+    \includegraphics[width=0.9\textwidth]{PCs.png}
     \label{fig:pcs}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{PC1_vs_Yields.png}
+        \caption{PC1}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{PC2_vs_Yields.png}
+        \caption{PC2}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{PC3_vs_Yields.png}
+        \caption{PC3}
+    \end{subfigure}
+
+    \caption{Principal Components vs Yields}
+    \label{fig:three}
 \end{figure}
 
 \pagebreak

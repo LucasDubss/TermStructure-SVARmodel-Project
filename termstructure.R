@@ -180,9 +180,9 @@ y_lim <- range(PCs_to_plot[, 2:4])
 
 png(
   filename = file.path(images, "PCs.png"),
-  width = 1000,
+  width = 900,
   height = 600,
-  res = 130
+  res = 120
 )
 
 plot(
@@ -236,6 +236,245 @@ legend(
   ),
   lwd = c(2.5, 2.5, 2.5, NA, NA),
   pch = c(NA, NA, NA, 15, 15),
+  pt.cex = 2,
+  bty = "n",
+  cex = 0.9
+)
+
+dev.off()
+
+#Plot PCs + Yields (this helps visualize the comparison between the yields and each PC)
+y_lim1 <- range(
+  c(yields_long$yield, PCs_to_plot$PC1),
+  na.rm = TRUE
+)
+
+png(
+  filename = file.path(images, "PC1_vs_Yields.png"),
+  width = 1000,
+  height = 600,
+  res = 120
+)
+
+plot(
+  PCs_to_plot$date,
+  PCs_to_plot$PC1,
+  type = "n",
+  ylim = y_lim1,
+  xlab = "",
+  ylab = "%"
+)
+
+for (m in levels(yields_long$maturity)) {
+  tmp <- yields_long[yields_long$maturity == m, ]
+  lines(
+    tmp$date,
+    tmp$yield,
+    col = rgb(0, 0.55, 0.55, 0.25),
+    lwd = 1
+  )
+}
+
+lines(
+  PCs_to_plot$date,
+  PCs_to_plot$PC1,
+  col = "red3",
+  lwd = 3
+)
+
+legend(
+  "topleft",
+  legend = c(
+    "All yields",
+    "PC1"
+  ),
+  col = c(
+    rgb(0, 0.55, 0.55, 0.6),
+    "red3",
+    rgb(0.6, 0.6, 0.6, 0.6),
+    rgb(1, 0.5, 0.5, 0.6)
+  ),
+  lwd = c(2, 3, NA, NA),
+  pch = c(NA, NA, 15, 15),
+  pt.cex = 2,
+  bty = "n",
+  cex = 0.9
+)
+
+dev.off()
+
+y_lim1 <- range(
+  c(yields_long$yield, PCs_to_plot$PC1),
+  na.rm = TRUE
+)
+
+png(
+  filename = file.path(images, "PC1_vs_Yields.png"),
+  width = 900,
+  height = 600,
+  res = 120
+)
+
+plot(
+  PCs_to_plot$date,
+  PCs_to_plot$PC1,
+  type = "n",
+  ylim = y_lim1,
+  xlab = "",
+  ylab = "%"
+)
+
+for (m in levels(yields_long$maturity)) {
+  tmp <- yields_long[yields_long$maturity == m, ]
+  lines(
+    tmp$date,
+    tmp$yield,
+    col = rgb(0, 0.55, 0.55, 0.25),
+    lwd = 1
+  )
+}
+
+lines(
+  PCs_to_plot$date,
+  PCs_to_plot$PC1,
+  col = "red3",
+  lwd = 3
+)
+
+legend(
+  "topleft",
+  legend = c(
+    "All yields",
+    "PC1"
+  ),
+  col = c(
+    rgb(0, 0.55, 0.55, 0.6),
+    "red3",
+    rgb(0.6, 0.6, 0.6, 0.6),
+    rgb(1, 0.5, 0.5, 0.6)
+  ),
+  lwd = c(2, 3, NA, NA),
+  pch = c(NA, NA, 15, 15),
+  pt.cex = 2,
+  bty = "n",
+  cex = 0.9
+)
+
+dev.off()
+
+#PC2
+y_lim2 <- range(
+  c(yields_long$yield, PCs_to_plot$PC2),
+  na.rm = TRUE
+)
+
+png(
+  filename = file.path(images, "PC2_vs_Yields.png"),
+  width = 900,
+  height = 600,
+  res = 120
+)
+
+plot(
+  PCs_to_plot$date,
+  PCs_to_plot$PC2,
+  type = "n",
+  ylim = y_lim2,
+  xlab = "",
+  ylab = "%"
+)
+
+for (m in levels(yields_long$maturity)) {
+  tmp <- yields_long[yields_long$maturity == m, ]
+  lines(
+    tmp$date,
+    tmp$yield,
+    col = rgb(0, 0.55, 0.55, 0.25),
+    lwd = 1
+  )
+}
+
+lines(
+  PCs_to_plot$date,
+  PCs_to_plot$PC2,
+  col = "green",
+  lwd = 3
+)
+
+legend(
+  "topleft",
+  legend = c(
+    "All yields",
+    "PC2"
+  ),
+  col = c(
+    rgb(0, 0.55, 0.55, 0.6),
+    "green",
+    rgb(0.6, 0.6, 0.6, 0.6),
+    rgb(1, 0.5, 0.5, 0.6)
+  ),
+  lwd = c(2, 3, NA, NA),
+  pch = c(NA, NA, 15, 15),
+  pt.cex = 2,
+  bty = "n",
+  cex = 0.9
+)
+
+dev.off()
+
+#PC3
+y_lim3 <- range(
+  c(yields_long$yield, PCs_to_plot$PC3),
+  na.rm = TRUE
+)
+
+png(
+  filename = file.path(images, "PC3_vs_Yields.png"),
+  width = 900,
+  height = 600,
+  res = 120
+)
+
+plot(
+  PCs_to_plot$date,
+  PCs_to_plot$PC3,
+  type = "n",
+  ylim = y_lim3,
+  xlab = "",
+  ylab = "%"
+)
+
+for (m in levels(yields_long$maturity)) {
+  tmp <- yields_long[yields_long$maturity == m, ]
+  lines(
+    tmp$date,
+    tmp$yield,
+    col = rgb(0, 0.55, 0.55, 0.25),
+    lwd = 1
+  )
+}
+
+lines(
+  PCs_to_plot$date,
+  PCs_to_plot$PC3,
+  col = "blue",
+  lwd = 3
+)
+
+legend(
+  "topleft",
+  legend = c(
+    "All yields",
+    "PC3"
+  ),
+  col = c(
+    rgb(0, 0.55, 0.55, 0.6),
+    "blue",
+    rgb(0.6, 0.6, 0.6, 0.6),
+    rgb(1, 0.5, 0.5, 0.6)
+  ),
+  lwd = c(2, 3, NA, NA),
+  pch = c(NA, NA, 15, 15),
   pt.cex = 2,
   bty = "n",
   cex = 0.9
