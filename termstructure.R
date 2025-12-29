@@ -481,3 +481,162 @@ legend(
 )
 
 dev.off()
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+#. 5.0 VAR(1)
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PCs_mat <- as.matrix(PCs[, c("PC1", "PC2", "PC3")])
+colnames(PCs_mat) <- c("PC1", "PC2", "PC3")
+T <- nrow(PCs_mat)
+Y <- PCs_mat[2:T, ]
+X <- cbind(
+  1,
+  PCs_mat[1:(T-1), ]
+)
+colnames(X) <- c("Intercept", "PC1_L1", "PC2_L1", "PC3_L1")
+coeff_hat <- solve(t(X) %*% X) %*% t(X) %*% Y
+mu_hat  <- coeff_hat[1, ]          
+phi_hat <- coeff_hat[2:4, ]   
+
+colnames(phi_hat) <- c("PC1","PC2","PC3")
+rownames(phi_hat) <- c("PC1(-1)","PC2(-1)","PC3(-1)")
+
+mu_hat
+phi_hat
+
+# Stationarity chec;k
+eig <- eigen(phi_hat)
+eig$values
+abs(eig$values)
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+#. 6.0 Affine Pricing Equation:
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Y <- as.matrix(yields[, -1])
+X <- as.matrix(
+  cbind(
+    1,
+    PCs[, c("PC1", "PC2", "PC3")]
+  )
+)
+
+coeff_hat <- solve(t(X) %*% X) %*% t(X) %*% Y
+A <- coeff_hat[1, ]
+names(A) <- colnames(Y)
+B <- coeff_hat[2:4, ]
+rownames(B) <- c("PC1", "PC2", "PC3")
+colnames(B) <- colnames(Y)
+
+delta0 <- A[1]   
+delta1 <- B[, 1]     
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+#. 7.0 Decomposition:
+#------------------------------------------------------------------------------------------------------------------------
+
+PCs_fore <- array(NA, dim = c(N, T, 120))
+short_rate_fore <- matrix(NA, nrow = T, ncol = 120)
+
+for (t in 1:T) {
+  for (h in 1:120) {
+    
+    if (h == 1) {
+      PCs_fore[, t, h] <- mu_hat + t(phi_hat) %*% PCs_mat[t, ]
+    } else {
+      PCs_fore[, t, h] <- mu_hat + t(phi_hat) %*% PCs_fore[, t, h - 1]
+    }
+    
+    short_rate_fore[t, h] <- delta0 + t(delta1) %*% PCs_fore[, t, h]
+  }
+}
+J <- ncol(yields) - 1
+max_h <- ncol(short_rate_fore)
+
+J <- ncol(yields) - 1
+
+Exp <- matrix(NA, nrow = T, ncol = J)
+colnames(Exp) <- colnames(yields)[-1]
+
+max_h <- ncol(short_rate_fore)
+
+for (j in 1:J) {
+  h_j <- min(maturity_months[j], max_h)
+  
+  Exp[, j] <- rowMeans(
+    short_rate_fore[, 1:h_j, drop = FALSE]
+  )
+}
+
+
+Exp[, 1] <- yields$GER1M
+
+Y_mat <- as.matrix(yields[, -1])  
+TP <- Y_mat - Exp
+
+
+# Plotting: Expectations / Term Premium decomposition
+Dates <- yields$date
+Y <- as.matrix(yields[, -1])
+colnames(Y) <- maturity_order
+
+maturities_to_plot <- c("GER3M", "GER2Y", "GER5Y","GER10Y")
+
+for (m in maturities_to_plot) {
+  
+  j <- which(maturity_order == m)
+  
+  Decomp_to_plot <- data.frame(
+    date  = Dates,
+    Yield = Y[, j],
+    Exp   = Exp[, j],
+    TP    = TP[, j]
+  )
+  
+  ylim <- range(Decomp_to_plot[, -1], na.rm = TRUE)
+  
+  png(
+    filename = file.path(images, paste0("Decomposition_", m, ".png")),
+    width = 900,
+    height = 600,
+    res = 120
+  )
+  
+  plot(
+    Decomp_to_plot$date,
+    Decomp_to_plot$Yield,
+    type = "l",
+    lwd  = 2.5,
+    col  = "black",
+    ylim = ylim,
+    xlab = "",
+    ylab = "%"
+  )
+  
+  lines(
+    Decomp_to_plot$date,
+    Decomp_to_plot$Exp,
+    col = "steelblue",
+    lwd = 2
+  )
+  
+  lines(
+    Decomp_to_plot$date,
+    Decomp_to_plot$TP,
+    col = "firebrick",
+    lwd = 2
+  )
+  
+  legend(
+    "top",
+    legend = c("Yield", "Expectations", "Term premium"),
+    col = c("black", "steelblue", "firebrick"),
+    lwd = c(2.5, 2, 2),
+    bty = "n",
+    cex = 0.9
+  )
+  
+  dev.off()
+}

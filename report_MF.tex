@@ -33,6 +33,7 @@
 \usepackage{csquotes}
 \usepackage{enumitem}
 \usepackage{lipsum}
+\usepackage{threeparttable}
 \usepackage[backend=biber,style=apa,sorting=nyt]{biblatex}
 
 %==================== I m a g e s ====================
@@ -137,9 +138,26 @@ The loadings, ploted through maturities (monthly) in Figure \ref{fig:pcal}, reve
     \item \textbf{Curvature Factor (PC3):} The third principal component exhibits a reverse hump-shaped pattern, likewise to the OIS. This could be due to low rates environment and the presence of negative yields in the short end of the curve. Nonetheless, this factor only explains about 1\% of the variance, so its economic significance might be limited.
 \end{enumerate}
 
-\subsection{Time Series of Principal Components:}
+\par
+Overall, the PCA loadings align well with what is typically observed in yield curve analysis, and particularly with our findings using OIS data.
+Looking at the time series of the principal components in Figures \ref{fig:pcs} \& \ref{fig:threepc}, we can observe the dynamics of these factors over the sample period and even see how they relate to the movements in the yield curves.
+The level factor (PC1) exhibits similar fluctuations to the yields, with a notable spike during the ukraine war period, reflecting the overall increase in yields during that time.
+On the other hand, the slope (PC2) first increased at the beginning of the war but then decreasedto negative levels due to monetary tightening.
+
+\subsection{A VAR(1) Model for the Principal Components:}
+
+Following the PCA, we estimated a VAR(1) model on the first three principal components to capture their dynamic interactions over time.
+The VAR(1) model is specified as follows:
+\begin{align}
+    \mathcal{P}_t = \mu + \Phi \mathcal{P}_{t-1} + \Sigma\varepsilon_t
+\end{align}
+The results of the VAR(1) estimation are presented in Table \ref{tab:var_coeff}.
+The results yield persistent coefficients for all three principal components, indicating that past values of each component significantly influence their current values.
+As expected by construction, these coefficients are diminishing across components, with the level factor (PC1) showing the highest persistence, followed by the slope (PC2) and curvature (PC3) factors.
+From the eigenvalues of the coefficient matrix $\Phi$, we can confirm the stationarity of the VAR(1) process, as all eigenvalues lie within the unit circle (see Table \ref{tab:var_eigenvalues}).
 \pagebreak
 
+\subsection{Decomposition of Components:}
 \section{\Large SVAR Analysis of Monetary Policy:}
 \label{sec:svarmodel}
 
@@ -212,9 +230,70 @@ The loadings, ploted through maturities (monthly) in Figure \ref{fig:pcal}, reve
     \end{subfigure}
 
     \caption{Principal Components vs Yields}
-    \label{fig:three}
+    \label{fig:threepc}
 \end{figure}
 
+\begin{table}[H]
+    \centering
+    \caption{VAR(1) coefficient matrix in principal component space}
+    \label{tab:var_coeff}
+    \begin{tabular}{lccc}
+    \hline
+     & PC1 & PC2 & PC3 \\
+    \hline
+    PC1$_{t-1}$ & \textbf{0.9958} & 0.0028 & 0.0074 \\
+    PC2$_{t-1}$ & 0.0317 & \textbf{0.9574} & -0.0083 \\
+    PC3$_{t-1}$ & -0.4314 & -0.1525 & \textbf{0.8490} \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Eigenvalues of the VAR(1) coefficient matrix}
+    \label{tab:var_eigenvalues}
+    \begin{threeparttable}
+    \begin{tabular}{lcc}
+    \hline
+    Eigenvalue & Complex value & Modulus \\
+    \hline
+    $\lambda_1$ & $0.9723 + 0.0207i$ & $0.9725$ \\
+    $\lambda_2$ & $0.9723 - 0.0207i$ & $0.9725$ \\
+    $\lambda_3$ & $0.8576$ & $0.8576$ \\
+    \hline
+    \end{tabular}
+    \begin{tablenotes}[flushleft]
+    \footnotesize
+    \item \textsc{Note:} \textit{All eigenvalues have modulus strictly smaller than one, indicating that the VAR(1) process is stationary}
+    \end{tablenotes}
+    \end{threeparttable}
+\end{table}
+     
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Decomposition_GER3M.png}
+        \caption{GER3M}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Decomposition_GER2Y.png}
+        \caption{GER2Y}
+    \end{subfigure}
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Decomposition_GER5Y.png}
+        \caption{GER5Y}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Decomposition_GER10Y.png}
+        \caption{GER10Y}
+    \end{subfigure}
+    \caption{Decomposition of Yields}
+    \label{fig:decomp}
+\end{figure}
 \pagebreak
 \section{\Large SVAR Appendix}
 \pagebreak
