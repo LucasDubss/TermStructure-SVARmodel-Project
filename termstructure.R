@@ -12,7 +12,9 @@ library(lubridate)
 library(zoo)
 library(readxl)
 library(viridis)
-
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 #2.0  Data Treatment :
@@ -640,3 +642,201 @@ for (m in maturities_to_plot) {
   
   dev.off()
 }
+
+# Plot of signed histograms with correct stacking
+bar_width <- median(diff(sort(unique(Dates))))
+
+for (m in maturities_to_plot) {
+  
+  j <- which(maturity_order == m)
+  
+  Decomp <- data.frame(
+    date = Dates,
+    Exp = Exp[, j],
+    TP  = TP[, j],
+    Yield = Y[, j]
+  )
+  
+  # Build bar limits
+  Decomp_long <- Decomp %>%
+    mutate(
+      Exp_ymin = 0,
+      Exp_ymax = Exp,
+      
+      TP_ymin = ifelse(TP >= 0, Exp, TP),
+      TP_ymax = ifelse(TP >= 0, Exp + TP, 0)
+    ) %>%
+    select(date,
+           Exp_ymin, Exp_ymax,
+           TP_ymin, TP_ymax,
+           Yield) %>%
+    pivot_longer(
+      cols = c(Exp_ymin, TP_ymin),
+      names_to = "component",
+      values_to = "ymin"
+    ) %>%
+    mutate(
+      ymax = ifelse(component == "Exp_ymin", Exp_ymax, TP_ymax),
+      component = ifelse(component == "Exp_ymin", "Expectations", "TermPremium")
+    )
+  
+  p <- ggplot() +
+    
+    # Expectations bars
+    geom_rect(
+      data = Decomp_long %>% filter(component == "Expectations"),
+      aes(
+        xmin = date - bar_width / 2,
+        xmax = date + bar_width / 2,
+        ymin = ymin,
+        ymax = ymax,
+        fill = component
+      ),
+      alpha = 0.7
+    ) +
+    
+    # Term premium bars (stacked if positive, negative otherwise)
+    geom_rect(
+      data = Decomp_long %>% filter(component == "TermPremium"),
+      aes(
+        xmin = date - bar_width / 2,
+        xmax = date + bar_width / 2,
+        ymin = ymin,
+        ymax = ymax,
+        fill = component
+      ),
+      alpha = 0.7
+    ) +
+    
+    # Yield line
+    geom_line(
+      data = Decomp,
+      aes(x = date, y = Yield),
+      linewidth = 1.3,
+      color = "black"
+    ) +
+    
+    scale_fill_manual(
+      values = c(
+        "Expectations" = "steelblue",
+        "TermPremium"  = "firebrick"
+      )
+    ) +
+    
+    labs(
+      x = NULL,
+      y = "%",
+      fill = NULL
+    ) +
+    
+    theme_minimal(base_size = 14) +
+    theme(
+      legend.position = "top"
+    )
+  
+  ggsave(
+    filename = file.path(images, paste0("Decomp_Bars_", m, ".png")),
+    plot = p,
+    width = 9,
+    height = 6,
+    dpi = 300
+  )
+}
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+# 10.0 One bar per event: cumulative 10Y change split into Expectations + Term Premium
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# --- Event windows ----------------------------------------------------------------------------
+events <- tibble::tibble(
+  event = c("COVID-19", "Ukraine war", "Monetary policy tightening"),
+  start = as.Date(c("2020-03-01", "2022-02-01", "2022-07-01")),
+  end   = as.Date(c("2021-06-30", "2023-12-31", "2023-12-31"))
+)
+
+# --- Choose the 10Y series --------------------------------------------------------------------
+m <- "GER10Y"
+j <- which(maturity_order == m)
+
+base <- data.frame(
+  date  = Dates,
+  Exp   = Exp[, j],
+  TP    = TP[, j],
+  Yield = Y[, j]
+) %>%
+  arrange(date)
+
+# --- Cumulative changes per event (end − start), in basis points ------------------------------
+event_changes <- events %>%
+  rowwise() %>%
+  mutate(
+    Exp_bp = {
+      tmp <- base %>% filter(date >= start & date <= end)
+      100 * (last(tmp$Exp) - first(tmp$Exp))
+    },
+    TP_bp = {
+      tmp <- base %>% filter(date >= start & date <= end)
+      100 * (last(tmp$TP) - first(tmp$TP))
+    },
+    Yield_bp = {
+      tmp <- base %>% filter(date >= start & date <= end)
+      100 * (last(tmp$Yield) - first(tmp$Yield))
+    }
+  ) %>%
+  ungroup()
+
+# --- Enforce event order ----------------------------------------------------------------------
+event_order <- c("COVID-19", "Ukraine war", "Monetary  Tightening")
+
+event_changes$event <- factor(event_changes$event, levels = event_order)
+
+# --- Long format for stacked bars -------------------------------------------------------------
+bar_df <- event_changes %>%
+  select(event, Exp_bp, TP_bp, Yield_bp) %>%
+  pivot_longer(
+    cols = c(Exp_bp, TP_bp),
+    names_to = "component",
+    values_to = "change_bp"
+  ) %>%
+  mutate(
+    component = recode(component,
+                       Exp_bp = "Expectations",
+                       TP_bp  = "Term premium"),
+    event = factor(event, levels = event_order)
+  )
+
+# --- Plot: ONE bar per event split into Exp and TP ---------------------------------------------
+p <- ggplot(bar_df, aes(x = event, y = change_bp, fill = component)) +
+  geom_col(width = 0.65) +
+  geom_hline(yintercept = 0, linewidth = 0.6) +
+  geom_point(
+    data = event_changes,
+    aes(x = event, y = Yield_bp),
+    inherit.aes = FALSE,
+    shape = 18,   # diamond
+    size = 4
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Expectations" = "steelblue",
+      "Term premium" = "firebrick"
+    )
+  ) +
+  labs(
+    x = NULL,
+    y = "Cumulative change (bp)",
+    fill = NULL
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_text(face = "bold")
+  )
+
+ggsave(
+  filename = file.path(images, paste0("EventBars_", m, ".png")),
+  plot = p,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
